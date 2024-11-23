@@ -10,10 +10,11 @@ const FileUploading = ({
     handleFileChange,
     uploadColor,
     isUploading,
+    userResponse
 }) => {
     return (
         <div className="bottom-8  right-0  left-0 max-w-screen-xl mx-auto fixed">
-            <form className="input-container border border-red-400 rounded-b-3xl text-gray-950  bg-blue-100">
+            <form className="input-container border rounded-b-3xl text-gray-950  bg-blue-100">
                 <input
                     className="chat-inp focus:outline-none"
                     type="text"
@@ -21,9 +22,11 @@ const FileUploading = ({
                         "Enter a prompt here"
                     }
                     onChange={handleModelInputChange}
+                    value={userResponse}
                 />
                 <button type='submit' onClick={hfInference} ><LuSend className='' size={25} /></button>
-                <form onClick={handleFormClick} className="cursor-pointer">
+
+                <form onClick={handleFormClick} className="cursor-pointer mx-4">
                     <input
                         multiple
                         accept=".json, .pdf"

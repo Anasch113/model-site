@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import OpenAI from "openai";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import FileUploading from '../../components/FileUploading';
+import axios from "axios"
+import UploadModel from '../../components/UploadModel';
 const Home = () => {
 
 
@@ -14,13 +16,19 @@ const Home = () => {
     const [modelResponse, setModelResponse] = useState([])
     const [userResponse, setUserResponse] = useState("");
     const [userResponse2, setUserResponse2] = useState("");
-    const [isResponse, setIsResponse] = useState(false)
+    const [file, setFile] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
-    const [gradioUrl, setIsGradioUrl] = useState("")
     const [userMessageSent, setUserMessageSent] = useState(false)
     const [isUploading, setIsUploading] = useState(false); // Uploading state
     const [uploadColor, setUploadColor] = useState('red'); // Button color
     const [error, setError] = useState("")
+    const [message, setMessage] = useState("")
+    const [formDataInfo, setFormDataInfo] = useState({
+        name: "",
+        email: ""
+    })
+    const [showModel, setShowModel] = useState(false)
+
 
     const navigate = useNavigate()
 
@@ -29,13 +37,8 @@ const Home = () => {
 
     const handleModelInputChange = (e) => {
         setUserResponse(e.target.value)
+        setUserResponse2(e.target.value)
     }
-
-
-
-
-
-
 
     const openai = new OpenAI({
         "baseURL": import.meta.env.VITE_MODEL_INFERENCE_ENDPOINT_URL,
@@ -45,10 +48,13 @@ const Home = () => {
 
 
     const hfInference = async (e) => {
+
+
         try {
             e.preventDefault()
             setIsProcessing(true)
-            setUserResponse2(userResponse)
+
+            setUserResponse("")
             setUserMessageSent(true)
 
 
@@ -57,7 +63,7 @@ const Home = () => {
                 "messages": [
                     {
                         "role": "user",
-                        "content": `${userResponse} `
+                        "content": `${userResponse2} `
                     }
                 ],
                 "max_tokens": 150,
@@ -69,7 +75,8 @@ const Home = () => {
             console.log("stream:", stream)
 
             setModelResponse(response)
-            setIsResponse(true)
+
+
             // for await (const chunk of stream) {
             //     process.stdout.write(chunk.choices[0]?.delta?.content || '');
             // }
@@ -85,37 +92,65 @@ const Home = () => {
         document.querySelector(".input-field").click();
     };
 
-
     const handleFileChange = async (event) => {
+
         const file = event.target.files[0];
+        setFile(file)
+        console.log("file:", file)
+
         if (file) {
             setIsUploading(true);
             setUploadColor('green');
+            setShowModel(true)
 
-            // Simulate file upload
+
+        }
+    };
+
+
+    const uploadAndTranscribe = async () => {
+        try {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_PRESET_NAME); // Cloudinary preset
+            formData.append('context', `user_id=${formDataInfo.name}|user_email=${formDataInfo.email}`);
 
             try {
-                // await fetch('/upload', { // Your backend upload endpoint
-                //     method: 'POST',
-                //     body: formData,
-                // });
-                alert('File uploaded successfully!');
+                const response = await axios.post(
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/upload`, // Cloudinary URL
+                    formData
+                );
+
+                console.log('Uploaded file URL:', response.data.secure_url);
+                toast.success("File uploaded successfully")
+                setMessage(`Hey ${formDataInfo.name}! Thanks for uploading the file. Your model will be ready soon`)
             } catch (error) {
                 console.error('Upload failed:', error);
             } finally {
                 setIsUploading(false);
                 setUploadColor('red');
+                setShowModel(false)
             }
+        } catch (error) {
+            console.log("error:", error)
         }
-    };
+    }
 
 
+    const handleOnChangeFormData = (e, key) => {
+        setFormDataInfo({
+            ...formDataInfo,
+            [key]: e.target.value
+        })
+
+
+    }
+
+    console.log("user response", userResponse)
     return (
         <div className="chat-app">
 
-            <div className="chat-container chatbox-container flex-col">
+            <div className="chat-container chatbox-container flex-col p-1 md:p-0">
                 <div className='my-5 flex justify-around md:w-full max-[500px]:flex-col max-[500px]:gap-5 w-32 max-[500px]:items-center'>
 
                     <button onClick={() => {
@@ -127,6 +162,10 @@ const Home = () => {
                 <div className="bg-bg-light chatbox  px-20 overflow-y-auto scroll-smooth pt-5 pb-32 rounded-3xl max-w-screen-xl w-full h-[80vh]">
 
                     <p className='text-2xl md:text-center font-semibold font-poppins max-[500px]:w-96'>What can I help you ?</p>
+
+                    <p className=' md:text-center my-2 font-poppins max-[500px]:w-96'>{message}</p>
+
+
 
                     <p className='text-lg text-red-500 font-semibold my-5 font-poppins text-center max-[500px]:w-96'> {error ? error.toString() : ""}</p>
 
@@ -188,9 +227,21 @@ const Home = () => {
                             handleFileChange={handleFileChange}
                             uploadColor={uploadColor}
                             isUploading={isUploading}
+                            userResponse={userResponse}
 
                         />
                     </div>
+
+                    {
+                        showModel && <UploadModel
+                            uploadAndTranscribe={uploadAndTranscribe}
+                            setShowModel={setShowModel}
+                            file={file}
+                            handleOnChangeFormData={handleOnChangeFormData}
+                            formData={formDataInfo}
+
+                        />
+                    }
 
 
 
