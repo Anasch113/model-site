@@ -28,6 +28,7 @@ const Home = () => {
         email: ""
     })
     const [showModel, setShowModel] = useState(false)
+    const [messages, setMessages] = useState([]);
 
 
     const navigate = useNavigate()
@@ -37,9 +38,12 @@ const Home = () => {
 
     const handleModelInputChange = (e) => {
         setUserResponse(e.target.value)
-        setUserResponse2(e.target.value)
+        // setUserResponse2(e.target.value)
     }
-
+    const giveUserResponse = () => {
+        const response = userResponse
+        return response
+    }
     const openai = new OpenAI({
         "baseURL": import.meta.env.VITE_MODEL_INFERENCE_ENDPOINT_URL,
         "apiKey": import.meta.env.VITE_HUGGING_FACE_TOKEN,
@@ -51,6 +55,9 @@ const Home = () => {
 
 
         try {
+            const currentUserResponse = giveUserResponse();
+            setUserResponse2(currentUserResponse)
+            console.log(" current user response", currentUserResponse)
             e.preventDefault()
             setIsProcessing(true)
 
@@ -63,7 +70,7 @@ const Home = () => {
                 "messages": [
                     {
                         "role": "user",
-                        "content": `${userResponse2} `
+                        "content": `${currentUserResponse} `
                     }
                 ],
                 "max_tokens": 150,
@@ -72,7 +79,7 @@ const Home = () => {
 
             const response = stream.choices
 
-            console.log("stream:", stream)
+            console.log("response:", response)
 
             setModelResponse(response)
 
@@ -85,7 +92,7 @@ const Home = () => {
             console.log("error:", error)
         }
     }
-    console.log("response", modelResponse)
+    console.log("model response", modelResponse)
 
 
     const handleFormClick = () => {
@@ -151,15 +158,9 @@ const Home = () => {
         <div className="chat-app">
 
             <div className="chat-container chatbox-container flex-col p-1 md:p-0">
-                <div className='my-5 flex justify-around md:w-full max-[500px]:flex-col max-[500px]:gap-5 w-32 max-[500px]:items-center'>
 
-                    <button onClick={() => {
-                        navigate("/model-guide")
-                    }} className='p-4 bg-bg-light3 rounded-xl'> Model Guide</button>
 
-                </div>
-
-                <div className="bg-bg-light chatbox  px-20 overflow-y-auto scroll-smooth pt-5 pb-32 rounded-3xl max-w-screen-xl w-full h-[80vh]">
+                <div className="bg-bg-light chatbox  px-20 overflow-y-auto scroll-smooth pt-5 pb-32 rounded-3xl max-w-screen-xl w-full h-[80vh] mt-10">
 
                     <p className='text-2xl md:text-center font-semibold font-poppins max-[500px]:w-96'>What can I help you ?</p>
 
@@ -169,8 +170,9 @@ const Home = () => {
 
                     <p className='text-lg text-red-500 font-semibold my-5 font-poppins text-center max-[500px]:w-96'> {error ? error.toString() : ""}</p>
 
-                    <div className="p-4 overflow-y-auto flex justify-between  flex-col" >
+                    <div className="p-4 overflow-y-auto flex justify-between border  flex-col" >
 
+                        {/* user messages */}
                         {
                             userMessageSent && <div
 
@@ -183,7 +185,7 @@ const Home = () => {
                         }
 
 
-
+                        {/* model messages */}
                         {
                             modelResponse.length > 0 && <div
 
@@ -202,7 +204,7 @@ const Home = () => {
 
 
 
-
+                        {/* /* processing */}
                         {
                             isProcessing &&
                             <div className="typing">

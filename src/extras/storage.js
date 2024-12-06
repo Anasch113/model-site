@@ -25,3 +25,9 @@ const stream = await openai.chat.completions.create({
 for await (const chunk of stream) {
 	process.stdout.write(chunk.choices[0]?.delta?.content || '');
 }
+
+
+
+// anas ch hf token: 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
+
+// uscriber hf token: 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
