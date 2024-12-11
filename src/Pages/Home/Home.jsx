@@ -9,6 +9,8 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import FileUploading from '../../components/FileUploading';
 import axios from "axios"
 import UploadModel from '../../components/UploadModel';
+import ChatUI from '../../components/ChatUI';
+import { initializeRecognizer } from '../../utils/speechSDK'
 const Home = () => {
 
 
@@ -31,6 +33,10 @@ const Home = () => {
     const [messages, setMessages] = useState([]);
 
 
+
+    const azureKey = import.meta.env.VITE_AZURE_KEY
+    const azureRegion = import.meta.env.VITE_AZURE_REGION
+
     const navigate = useNavigate()
 
 
@@ -51,47 +57,56 @@ const Home = () => {
     });
 
 
-    const hfInference = async (e) => {
+    const hfInference = async (e, transcript) => {
+        // console.log("transcript", transcript)
 
+
+
+        if (e.type === 'click') {
+            e.preventDefault()
+        }
+        stopSTT()
 
         try {
             const currentUserResponse = giveUserResponse();
-            setUserResponse2(currentUserResponse)
-            console.log(" current user response", currentUserResponse)
-            e.preventDefault()
-            setIsProcessing(true)
+            console.log("Current user response:", transcript);
 
-            setUserResponse("")
-            setUserMessageSent(true)
+            setIsProcessing(true);
 
+            // Add user message to the state
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { role: 'user', content: transcript || currentUserResponse },
+            ]);
 
+            // Clear input (if needed)
+            setUserResponse("");
+
+            // Get model response
             const stream = await openai.chat.completions.create({
-                "model": "tgi",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": `${currentUserResponse} `
-                    }
-                ],
-                "max_tokens": 150,
-                "stream": false
+                model: "tgi",
+                messages: [{ role: "user", content: transcript || currentUserResponse }],
+                max_tokens: 150,
+                stream: false,
             });
 
-            const response = stream.choices
+            const response = stream.choices[0]?.message?.content || "No response";
 
-            console.log("response:", response)
+            console.log("Model response:", response);
 
-            setModelResponse(response)
-
-
-            // for await (const chunk of stream) {
-            //     process.stdout.write(chunk.choices[0]?.delta?.content || '');
-            // }
-            setIsProcessing(false)
+            // Add model response to the state
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { role: 'assistant', content: response },
+            ]);
+            speakText(response)
+            setIsProcessing(false);
         } catch (error) {
-            console.log("error:", error)
+            console.error("Error:", error);
+            setIsProcessing(false);
         }
-    }
+    };
+
     console.log("model response", modelResponse)
 
 
@@ -154,6 +169,107 @@ const Home = () => {
     }
 
     console.log("user response", userResponse)
+
+
+    // STT function to capture speech and send as input to model
+
+    const recognizer = initializeRecognizer();
+
+    
+    const startListening = () => {
+        
+
+        recognizer.recognized = async (s, e) => {
+            if (e.result.reason === window.SpeechSDK.ResultReason.RecognizedSpeech) {
+                const transcript = e.result.text;
+                console.log("Recognized speech:", transcript);
+
+                // Set the transcript as userResponse and trigger hfInference
+                setUserResponse(transcript);
+                await hfInference("", transcript); // Trigger model interaction
+            } else {
+                console.log("No speech could be recognized.");
+            }
+        };
+
+        recognizer.startContinuousRecognitionAsync(
+            () => console.log("Recognition started."),
+            (err) => console.error("Error starting recognition:", err)
+        );
+
+        recognizer.canceled = () => {
+            console.log("Recognition canceled.");
+            recognizer.stopContinuousRecognitionAsync();
+        };
+
+        recognizer.sessionStopped = () => {
+            console.log("Session stopped.");
+            recognizer.stopContinuousRecognitionAsync();
+        };
+    };
+
+
+    const stopSTT = () => {
+
+        // const recognizer = initializeRecognizer();
+        if (recognizer) {
+            recognizer.stopContinuousRecognitionAsync(
+                () => {
+                    console.log("Speech recognition stopped successfully.");
+                },
+                (err) => {
+                    console.error("Error stopping speech recognition:", err);
+                }
+            );
+        } else {
+            console.log("No active recognizer to stop.");
+        }
+    };
+
+
+    const speakText = (textToSpeak) => {
+        try {
+            // Create speech configuration
+            const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(
+                azureKey,
+                azureRegion
+            );
+            speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; // Set the voice (choose a suitable one)
+
+            // Create audio configuration (default speakers)
+            const audioConfig = window.SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+
+            // Create the speech synthesizer
+            const synthesizer = new window.SpeechSDK.SpeechSynthesizer(
+                speechConfig,
+                audioConfig
+            );
+
+            // Synthesize speech from text
+            synthesizer.speakTextAsync(
+                textToSpeak,
+                (result) => {
+                    if (result.reason === window.SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
+                        console.log("Speech synthesis completed successfully.");
+                    } else {
+                        console.error("Speech synthesis failed:", result.errorDetails);
+                    }
+                    console.log("synthezier closed!!!!")
+                    synthesizer.close();
+                },
+                (error) => {
+                    console.error("Error during speech synthesis:", error);
+                    synthesizer.close();
+                }
+            );
+        } catch (error) {
+            console.error("Error initializing TTS:", error);
+        }
+    };
+
+
+
+
     return (
         <div className="chat-app">
 
@@ -170,54 +286,7 @@ const Home = () => {
 
                     <p className='text-lg text-red-500 font-semibold my-5 font-poppins text-center max-[500px]:w-96'> {error ? error.toString() : ""}</p>
 
-                    <div className="p-4 overflow-y-auto flex justify-between border  flex-col" >
-
-                        {/* user messages */}
-                        {
-                            userMessageSent && <div
-
-                                className={`message gpt"} bg-bg-light2 self-end `}
-                            >
-
-                                <div className="message-text">{userResponse2}</div>
-                                <div className="message-timestamp"></div>
-                            </div>
-                        }
-
-
-                        {/* model messages */}
-                        {
-                            modelResponse.length > 0 && <div
-
-                                className={`message gpt"} bg-bg-light2 `}
-                            >
-
-                                {
-                                    modelResponse.map((data, i) => (
-                                        <div key={i} className="message-text">{data.message.content}</div>
-                                    ))
-                                }
-
-                                <div className="message-timestamp"></div>
-                            </div>
-                        }
-
-
-
-                        {/* /* processing */}
-                        {
-                            isProcessing &&
-                            <div className="typing">
-                                <span className="dot"></span>
-                                <span className="dot"></span>
-                                <span className="dot"></span>
-                            </div>
-
-                        }
-
-
-
-                    </div>
+                    <ChatUI messages={messages} isProcessing={isProcessing} />
 
                     <div className="  w-full pb-5 ">
 
@@ -230,6 +299,7 @@ const Home = () => {
                             uploadColor={uploadColor}
                             isUploading={isUploading}
                             userResponse={userResponse}
+                            startListening={startListening}
 
                         />
                     </div>

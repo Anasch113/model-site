@@ -1,7 +1,7 @@
 import React from 'react'
 import { LuSend } from "react-icons/lu";
 import { FaCloudUploadAlt } from "react-icons/fa";
-
+import { IoMic } from "react-icons/io5";
 
 const FileUploading = ({
     hfInference,
@@ -10,12 +10,14 @@ const FileUploading = ({
     handleFileChange,
     uploadColor,
     isUploading,
-    userResponse
+    userResponse,
+    startListening
 }) => {
     return (
         <div className="bottom-8  right-0  left-0 max-w-screen-xl mx-auto fixed">
-            <form className="input-container border rounded-b-3xl text-gray-950  bg-blue-100">
-                <input
+            <div className="input-container border rounded-b-3xl text-gray-950  bg-blue-100">
+                <form className='w-full input-container'>
+                     <input
                     className="chat-inp focus:outline-none"
                     type="text"
                     placeholder={
@@ -25,6 +27,8 @@ const FileUploading = ({
                     value={userResponse}
                 />
                 <button type='submit' onClick={hfInference} ><LuSend className='' size={25} /></button>
+                </form>
+               
 
                 <form onClick={handleFormClick} className="cursor-pointer mx-4">
                     <input
@@ -40,9 +44,13 @@ const FileUploading = ({
                         size={30}
                         className={isUploading ? 'animate-spin' : ''}
                     />
-                </form>
 
-            </form>
+                </form>
+                <button onClick={startListening}>
+                    <IoMic size={30} />
+                </button>
+            </div>
+
         </div>
     )
 }
