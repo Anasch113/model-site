@@ -175,9 +175,9 @@ const Home = () => {
 
     const recognizer = initializeRecognizer();
 
-    
+
     const startListening = () => {
-        
+
 
         recognizer.recognized = async (s, e) => {
             if (e.result.reason === window.SpeechSDK.ResultReason.RecognizedSpeech) {
@@ -228,13 +228,15 @@ const Home = () => {
 
 
     const speakText = (textToSpeak) => {
+
+
         try {
             // Create speech configuration
             const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(
                 azureKey,
                 azureRegion
             );
-            speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; // Set the voice (choose a suitable one)
+            speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; // Set the voice
 
             // Create audio configuration (default speakers)
             const audioConfig = window.SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
@@ -245,17 +247,31 @@ const Home = () => {
                 audioConfig
             );
 
-            // Synthesize speech from text
+            // Add event handlers to detect when speech starts and stops
+            synthesizer.synthesizing = (s, e) => {
+                console.log("Speech synthesis in progress...");
+            };
+
+            synthesizer.synthesisCompleted = (s, e) => {
+                console.log("AI stopped speaking."); // This will log exactly when audio stops playing
+                synthesizer.close(); // Clean up resources
+                // startListening() // for auto STT
+            };
+
+            synthesizer.synthesisCanceled = (s, e) => {
+                console.error("Speech synthesis canceled or failed:", e.errorDetails);
+                console.log("AI stopped speaking due to an error.");
+                synthesizer.close(); // Clean up resources
+            };
+
+            // Log when speech starts
+            console.log("AI started speaking.");
+
+            // Synthesize speech
             synthesizer.speakTextAsync(
                 textToSpeak,
-                (result) => {
-                    if (result.reason === window.SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                        console.log("Speech synthesis completed successfully.");
-                    } else {
-                        console.error("Speech synthesis failed:", result.errorDetails);
-                    }
-                    console.log("synthezier closed!!!!")
-                    synthesizer.close();
+                () => {
+                    console.log("Speech synthesis request completed successfully."); // Speech synthesis started
                 },
                 (error) => {
                     console.error("Error during speech synthesis:", error);
@@ -266,6 +282,7 @@ const Home = () => {
             console.error("Error initializing TTS:", error);
         }
     };
+
 
 
 
