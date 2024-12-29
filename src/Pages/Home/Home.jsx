@@ -11,6 +11,7 @@ import axios from "axios"
 import UploadModel from '../../components/UploadModel';
 import ChatUI from '../../components/ChatUI';
 import { initializeRecognizer } from '../../utils/speechSDK'
+
 const Home = () => {
 
 
@@ -37,6 +38,7 @@ const Home = () => {
     const azureKey = import.meta.env.VITE_AZURE_KEY
     const azureRegion = import.meta.env.VITE_AZURE_REGION
 
+  
     const navigate = useNavigate()
 
 
