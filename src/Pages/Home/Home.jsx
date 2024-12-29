@@ -11,7 +11,7 @@ import axios from "axios"
 import UploadModel from '../../components/UploadModel';
 import ChatUI from '../../components/ChatUI';
 import { initializeRecognizer } from '../../utils/speechSDK'
-
+import { translateToEnglish, translateToLanguage } from "../../utils/deepLFunctions"
 const Home = () => {
 
 
@@ -38,7 +38,7 @@ const Home = () => {
     const azureKey = import.meta.env.VITE_AZURE_KEY
     const azureRegion = import.meta.env.VITE_AZURE_REGION
 
-  
+
     const navigate = useNavigate()
 
 
@@ -60,54 +60,123 @@ const Home = () => {
 
 
     const hfInference = async (e, transcript) => {
-        // console.log("transcript", transcript)
-
-
-
         if (e.type === 'click') {
-            e.preventDefault()
+            e.preventDefault();
         }
-        stopSTT()
+        stopSTT();
 
         try {
             const currentUserResponse = giveUserResponse();
-            console.log("Current user response:", transcript);
+            const userInput = transcript || currentUserResponse;
+            console.log("Current user response:", userInput);
 
             setIsProcessing(true);
 
-            // Add user message to the state
+            // Step 1: Detect input language and translate if needed
+            let translatedInput = userInput; // Default to original input
+            let detectedLanguage = "EN"; // Assume English by default
+
+            const { translatedText, detectedLanguage: detectedLang } = await translateToEnglish(userInput);
+            if (detectedLang !== "EN") {
+                translatedInput = translatedText; // Use translated text if not English
+                detectedLanguage = detectedLang;
+            }
+            console.log("Translated input to English:", translatedInput);
+            console.log("Detected Language:", detectedLanguage);
+
+            // Step 2: Add user message (original input) to the state
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { role: 'user', content: transcript || currentUserResponse },
+                { role: 'user', content: userInput }, // Original user message
             ]);
 
             // Clear input (if needed)
             setUserResponse("");
 
-            // Get model response
+            // Step 3: Get model response
             const stream = await openai.chat.completions.create({
                 model: "tgi",
-                messages: [{ role: "user", content: transcript || currentUserResponse }],
+                messages: [{ role: "user", content: translatedInput }],
                 max_tokens: 150,
                 stream: false,
             });
 
-            const response = stream.choices[0]?.message?.content || "No response";
+            const modelResponse = stream.choices[0]?.message?.content || "No response";
+            console.log("Model response (English):", modelResponse);
 
-            console.log("Model response:", response);
+            // Step 4: Translate model response back to the original language (if needed)
+            let finalResponse = modelResponse;
+            if (detectedLanguage !== "EN") {
+                finalResponse = await translateToLanguage(modelResponse);
+                console.log("Translated response to original language:", finalResponse);
+            }
 
-            // Add model response to the state
+            // Step 5: Add model response to the state
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { role: 'assistant', content: response },
+                { role: 'assistant', content: finalResponse },
             ]);
-            speakText(response)
+
+            // Step 6: Use TTS (if required) to speak the response
+            speakText(finalResponse);
+
             setIsProcessing(false);
         } catch (error) {
             console.error("Error:", error);
             setIsProcessing(false);
         }
     };
+
+
+    // const hfInference = async (e, transcript) => {
+    //     // console.log("transcript", transcript)
+
+
+
+    //     if (e.type === 'click') {
+    //         e.preventDefault()
+    //     }
+    //     stopSTT()
+
+    //     try {
+    //         const currentUserResponse = giveUserResponse();
+    //         console.log("Current user response:", transcript);
+
+    //         setIsProcessing(true);
+
+    //         // Add user message to the state
+    //         setMessages((prevMessages) => [
+    //             ...prevMessages,
+    //             { role: 'user', content: transcript || currentUserResponse },
+    //         ]);
+
+    //         // Clear input (if needed)
+    //         setUserResponse("");
+
+    //         // Get model response
+    //         const stream = await openai.chat.completions.create({
+    //             model: "tgi",
+    //             messages: [{ role: "user", content: transcript || currentUserResponse }],
+    //             max_tokens: 150,
+    //             stream: false,
+    //         });
+
+    //         const response = stream.choices[0]?.message?.content || "No response";
+
+    //         console.log("Model response:", response);
+
+    //         // Add model response to the state
+    //         setMessages((prevMessages) => [
+    //             ...prevMessages,
+    //             { role: 'assistant', content: response },
+    //         ]);
+    //         speakText(response)
+    //         setIsProcessing(false);
+    //     } catch (error) {
+    //         console.error("Error:", error);
+    //         setIsProcessing(false);
+    //     }
+    // };
 
     console.log("model response", modelResponse)
 

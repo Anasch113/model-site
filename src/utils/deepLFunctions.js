@@ -15,8 +15,13 @@ export async function translateToEnglish(text) {
                 target_lang: 'EN',
             },
         });
-        console.log("respose from the deepL:", response.data)
-        return response.data.translations[0].text;
+        const detectedLanguage = response.data.translations[0].detected_source_language;
+        console.log("Detected Language:", detectedLanguage);
+
+        return {
+            translatedText: response.data.translations[0].text,
+            detectedLanguage: detectedLanguage,
+        };
     } catch (error) {
         console.error('Translation to English failed:', error);
         throw error;
