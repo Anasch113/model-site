@@ -47,7 +47,9 @@ const FileUploading = ({
                         />
 
                     </form>
-                    <button onClick={startListening}>
+                    <button onClick={()=>{
+                        startListening('de-DE')
+                    }}>
                         <IoMic size={30} />
                     </button>
                 </span>

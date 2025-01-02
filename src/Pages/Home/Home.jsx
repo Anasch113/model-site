@@ -106,9 +106,14 @@ const Home = () => {
 
             // Step 4: Translate model response back to the original language (if needed)
             let finalResponse = modelResponse;
+
             if (detectedLanguage !== "EN") {
                 finalResponse = await translateToLanguage(modelResponse);
                 console.log("Translated response to original language:", finalResponse);
+                speakText(finalResponse, 'de-DE');
+            }
+            else {
+                speakText(finalResponse, 'en-US');
             }
 
             // Step 5: Add model response to the state
@@ -118,7 +123,7 @@ const Home = () => {
             ]);
 
             // Step 6: Use TTS (if required) to speak the response
-            speakText(finalResponse);
+
 
             setIsProcessing(false);
         } catch (error) {
@@ -197,8 +202,10 @@ const Home = () => {
     const recognizer = initializeRecognizer();
 
 
-    const startListening = () => {
+    const startListening = (language = "en-US") => {
+        const recognizer = initializeRecognizer(language);
 
+        console.log("detected language in STT", language)
 
         recognizer.recognized = async (s, e) => {
             if (e.result.reason === window.SpeechSDK.ResultReason.RecognizedSpeech) {
@@ -209,12 +216,13 @@ const Home = () => {
                 setUserResponse(transcript);
                 await hfInference("", transcript); // Trigger model interaction
             } else {
+                stopSTT()
                 console.log("No speech could be recognized.");
             }
         };
 
         recognizer.startContinuousRecognitionAsync(
-            () => console.log("Recognition started."),
+            () => console.log("Recognition started in language:", language),
             (err) => console.error("Error starting recognition:", err)
         );
 
@@ -248,52 +256,45 @@ const Home = () => {
     };
 
 
-    const speakText = (textToSpeak) => {
-
-
+    const speakText = (textToSpeak, language = "en-US") => {
         try {
-            // Create speech configuration
-            const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(
-                azureKey,
-                azureRegion
-            );
-            speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; // Set the voice
+            console.log("detected language in TTS", language)
+            const azureKey = import.meta.env.VITE_AZURE_KEY;
+            const azureRegion = import.meta.env.VITE_AZURE_REGION;
 
-            // Create audio configuration (default speakers)
+            const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(azureKey, azureRegion);
+
+            // Map language to neural voices
+            const voices = {
+                "en-US": "en-US-JennyNeural",
+                "de-DE": "de-DE-KatjaNeural", // German female voice
+            };
+
+            speechConfig.speechSynthesisVoiceName = voices[language] || "en-US-JennyNeural"; // Default to English
+            speechConfig.speechSynthesisLanguage = language;
+
             const audioConfig = window.SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+            const synthesizer = new window.SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
 
-            // Create the speech synthesizer
-            const synthesizer = new window.SpeechSDK.SpeechSynthesizer(
-                speechConfig,
-                audioConfig
-            );
-
-            // Add event handlers to detect when speech starts and stops
             synthesizer.synthesizing = (s, e) => {
                 console.log("Speech synthesis in progress...");
             };
 
             synthesizer.synthesisCompleted = (s, e) => {
-                console.log("AI stopped speaking."); // This will log exactly when audio stops playing
-                synthesizer.close(); // Clean up resources
-                // startListening() // for auto STT
+                console.log("AI stopped speaking.");
+                synthesizer.close();
             };
 
             synthesizer.synthesisCanceled = (s, e) => {
                 console.error("Speech synthesis canceled or failed:", e.errorDetails);
-                console.log("AI stopped speaking due to an error.");
-                synthesizer.close(); // Clean up resources
+                synthesizer.close();
             };
 
-            // Log when speech starts
             console.log("AI started speaking.");
 
-            // Synthesize speech
             synthesizer.speakTextAsync(
                 textToSpeak,
-                () => {
-                    console.log("Speech synthesis request completed successfully."); // Speech synthesis started
-                },
+                () => console.log("Speech synthesis request completed successfully."),
                 (error) => {
                     console.error("Error during speech synthesis:", error);
                     synthesizer.close();
@@ -303,7 +304,6 @@ const Home = () => {
             console.error("Error initializing TTS:", error);
         }
     };
-
 
 
 
