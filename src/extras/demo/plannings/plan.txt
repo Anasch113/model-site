@@ -1,0 +1,28 @@
+ok. this is the next step in our project.
+
+challange:
+
+our user will only accept our model when the training of the model is easy.
+
+solution:
+
+on the website, please set beside the arrow for questioning an red rec button. if user wants to upload data he push button and than there is a selection of the files on his computer like data manager. user select file and start upload. after he start upload he comes back to website. the red button is turning arround but when the uploaded file is in the model it turns green and than red again for next upload process. thats it.
+
+backround:
+
+the transforming process from user pdf file to json file is our competence. later we will enable ways to make the uploaded files more intelligence. this will our core competence.
+
+
+
+
+
+
+
+
+
+option 2 is: you copy the content of a file and insert it into a .jason template. than you upload only the template. if you have more content to upload you copy it and add it to the existing template. sounds easier for me. because you can pretend the structure of the template.
+
+
+
+
+lets try it with a template. one .jason file. the admin upload file to us. we extract the content. we insert the content in the .jason template and the only thing we have to do is to actualize the model. thats it.
