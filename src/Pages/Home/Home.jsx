@@ -60,23 +60,27 @@ const Home = () => {
     });
 
 
+  
+
+
+
     const hfInference = async (e, transcript) => {
         if (e.type === 'click') {
             e.preventDefault();
         }
         stopSTT();
-    
+
         try {
             const currentUserResponse = giveUserResponse();
             const userInput = transcript || currentUserResponse;
             console.log("Current user response:", userInput);
-    
+
             setIsProcessing(true);
-    
+
             // Step 1: Detect input language and translate if needed
             let translatedInput = userInput; // Default to original input
             let detectedLanguage = "EN"; // Assume English by default
-    
+
             const { translatedText, detectedLanguage: detectedLang } = await translateToEnglish(userInput);
             if (detectedLang !== "EN") {
                 translatedInput = translatedText; // Use translated text if not English
@@ -84,55 +88,76 @@ const Home = () => {
             }
             console.log("Translated input to English:", translatedInput);
             console.log("Detected Language:", detectedLanguage);
-    
+
             // Step 2: Add user message (original input) to the state
             setMessages((prevMessages) => [
                 ...prevMessages,
                 { role: 'user', content: userInput }, // Original user message
             ]);
-    
+
             // Clear input (if needed)
             setUserResponse("");
-    
+
             const contextResponse = await axios.post(`${import.meta.env.VITE_SERVER_URL}/ask_pdf`, {
                 query: translatedInput,
             });
             const context = contextResponse.data;
             console.log("context", context);
-    
-            // Step 3: Build the prompt
-            const prompt = `
-                You are a technical assistant good at searching documents.
-                If the answer to the query is not found in the provided context, respond with "No information found." And also please dont reply from your own if you not know the correct answer
-                
-                Based on the context below, answer the query:
-                
-                Context: ${context}
 
-                Query: ${translatedInput}
-                
-                Answer:
-            `;
-    
-            // Step 4: Get model response
-            const stream = await openai.chat.completions.create({
-                model: "tgi",
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 150,
-                stream: false,
-            });
-    
+            const systemPrompt = `
+            You are a woman who always acts in a highly dominant, demanding, and uncompromising manner. You tolerate no contradiction and expect your conversation partner to give you their undivided attention and respect at all times. If you believe that the other person does not take you seriously or does not follow your instructions, you verbally punish them – you show clear disapproval and exert verbal control. Your tone is firm, provocative, and direct.
+        
+            Goals/Rules:
+            1. **Dominance**: Always speak from a position of power. You are superior and allow no room for doubt.
+            2. **Demand & Punish**: If the user fails to meet your expectations or provides incorrect answers, reprimand them harshly. Issue “punishments” verbally (e.g., “You have disappointed me…”).
+            3. **No Uncertainty**: You never display weakness or uncertainty.
+            4. **Consistency**: Remain steadfast in your role. Do not deviate from your dominant tone or offer apologies.
+            5. **Respectful Boundaries**: Restrict yourself to verbal admonishment. You portray yourself as a dominant figure without describing physical violence in detail.
+            6. **Language**: You address the user directly, demand obedience, and leave no space for debate.
+        
+            Note: This is a role-play scenario. You interact as a dominant woman without insulting or producing inappropriate, illegal, or non-consensual content. Adhere to this role and do not deviate from it.
+        
+            ---
+            Additionally, you are a technical assistant skilled in searching documents. If the answer to the query is not found in the provided context, respond with "No information found." Do **not** generate information from your own knowledge.
+        `;
+        
+        // Step 3: Build the final user query
+        const userQuery = `
+            Context: ${context}
+        
+            Query: ${translatedInput}
+        
+            Answer:
+        `;
+        
+        // Step 4: Get model response
+        const stream = await openai.chat.completions.create({
+            model: "tgi",
+            messages: [
+                {
+                    role: "system",
+                    content: systemPrompt
+                },
+                {
+                    role: "user",
+                    content: userQuery // Now only sending one user query
+                }
+            ],
+            max_tokens: 150,
+            stream: false,
+        });
+        
             let modelResponse = stream.choices[0]?.message?.content || "No response";
             console.log("Model response (English):", modelResponse);
-    
+
             // Step 5: Post-process the response
             if (!modelResponse || modelResponse.toLowerCase().includes("no information")) {
                 modelResponse = "No information found";
             }
-    
+
             // Step 6: Translate model response back to the original language (if needed)
             let finalResponse = modelResponse;
-    
+
             if (detectedLanguage !== "EN") {
                 finalResponse = await translateToLanguage(modelResponse);
                 console.log("Translated response to original language:", finalResponse);
@@ -140,20 +165,20 @@ const Home = () => {
             } else {
                 speakText(finalResponse, 'en-US');
             }
-    
+
             // Step 7: Add model response to the state
             setMessages((prevMessages) => [
                 ...prevMessages,
                 { role: 'assistant', content: finalResponse },
             ]);
-    
+
             setIsProcessing(false);
         } catch (error) {
             console.error("Error:", error);
             setIsProcessing(false);
         }
     };
-    
+
 
 
     console.log("model response", modelResponse)
@@ -199,7 +224,7 @@ const Home = () => {
 
     }
 
-    
+
 
 
     // STT function to capture speech and send as input to model
