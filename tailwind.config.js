@@ -10,7 +10,7 @@ export default {
 
       backgroundColor: {
 
-        'bg-color': 'black',
+        'bg-color': '#141414',
         'bg-light' : 'rgb(25 28 34)',
         'bg-light2' : 'rgb(35 39 46)',
         'bg-light3' : 'rgb(29 30 31)'
