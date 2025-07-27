@@ -34,9 +34,9 @@ const Users = () => {
 
 
 
-    const handleDownload = async (phoneNumber, nickname) => {
+    const handleDownload = async (chat_id, nickname) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/conversation/${phoneNumber}/download`, {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/conversation/${chat_id}/download`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'text/markdown'
@@ -86,7 +86,7 @@ const Users = () => {
                             <tr key={user.id} className="border-b border-gray-700 hover:bg-gray-800">
                                 <td className="p-4">{idx + 1}</td>
                                 <td className="p-4">{user.nickname}</td>
-                                <td className="p-4">{user.phone_number
+                                <td className="p-4">{user.chat_id
                                 }</td>
                                 <td className="p-4">{user.payment_status
                                 }</td>
@@ -94,7 +94,7 @@ const Users = () => {
                                 }</td>
                                 <td className="p-4 flex justify-center gap-4">
                                     <button
-                                        onClick={() => handleDownload(user.phone_number, user.nickname)}
+                                        onClick={() => handleDownload(user.chat_id, user.nickname)}
                                         className="text-blue-600 hover:text-blue-800"
                                         title="Download Conversation"
                                     >
