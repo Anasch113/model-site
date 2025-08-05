@@ -43,6 +43,9 @@ const AdminWrapper = ({ children }) => {
           <Link to="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-700">
             Users
           </Link>
+          <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
+            GPT Instructions
+          </Link>
         </nav>
         <div className="p-4 border-t border-gray-700">
           <button onClick={handleLogout} className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 rounded">
@@ -62,6 +65,9 @@ const AdminWrapper = ({ children }) => {
           </Link>
           <Link to="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-700">
             Users
+          </Link>
+           <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
+            GPT Instructions
           </Link>
         </nav>
         <div className="p-4 border-t border-gray-700">

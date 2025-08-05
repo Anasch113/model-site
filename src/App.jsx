@@ -9,6 +9,7 @@ import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import Users from "./Pages/Admin/Users";
 import Login from "./Pages/Admin/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Prompts from "./Pages/Admin/Prompts";
 function App() {
 
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin/gpt-instructions" element={<Prompts />} />
 
         </Routes>
 
