@@ -10,6 +10,7 @@ import Users from "./Pages/Admin/Users";
 import Login from "./Pages/Admin/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Prompts from "./Pages/Admin/Prompts";
+import SmallTalkPrompts from "./Pages/Admin/SmallTalkPrompts";
 function App() {
 
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/gpt-instructions" element={<Prompts />} />
+          <Route path="/admin/smalltalk-prompt" element={<SmallTalkPrompts />} />
 
         </Routes>
 
