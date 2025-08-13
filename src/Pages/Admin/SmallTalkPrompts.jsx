@@ -18,10 +18,16 @@ const SmallTalkPrompts = ({ promptName = "lady_ivy_small_talk" }) => {
             .then(res => {
                 setSystemPrompt(res.data.system_prompt);
                 setUserPromptTemplate(res.data.user_prompt_template);
+                console.log("res system prompt:", res.data)
+
                 setLoading(false);
             })
             .catch(() => setMessage("Failed to load prompt."));
     }, [promptName]);
+
+
+
+    console.log("userPromot template:", userPromptTemplate)
 
     const handleSave = () => {
         setSaving(true);
@@ -49,6 +55,12 @@ const SmallTalkPrompts = ({ promptName = "lady_ivy_small_talk" }) => {
                         className="w-full p-2 rounded-md mb-4 h-56 bg-bg-light3"
                         value={systemPrompt}
                         onChange={e => setSystemPrompt(e.target.value)}
+                    />
+                    <label className="block font-semibold mb-1 ">Small Talk User Prompt</label>
+                    <textarea
+                        className="w-full p-2 rounded-md mb-4 h-56 bg-bg-light3"
+                        value={userPromptTemplate}
+                        onChange={e => setUserPromptTemplate(e.target.value)}
                     />
                     <button
                         onClick={handleSave}
