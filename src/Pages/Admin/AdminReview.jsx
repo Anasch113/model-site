@@ -52,7 +52,7 @@ const fetchPending = async () => {
       <h1 className="text-2xl font-bold mb-4">Admin Review</h1>
       <div className="bg-bg-color shadow rounded-lg overflow-x-auto p-4">
         {/* {loading && <p>Loading...</p>} */}
-        {!loading && pendingMessages.length === 0 && (
+        {pendingMessages.length === 0 && (
           <p className="text-gray-500">No pending messages 🎉</p>
         )}
         {pendingMessages.map((msg) => (
