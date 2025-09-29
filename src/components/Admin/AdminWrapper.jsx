@@ -5,29 +5,29 @@ import toast from 'react-hot-toast'
 import { Menu, X } from "lucide-react";
 const AdminWrapper = ({ children }) => {
 
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
-
-
-    const handleLogout = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/admin/logout`, { withCredentials: true });  // important for session
-
-            toast.success("Logout successfully");
-            console.log("res", res.data)
-            window.location.href = "/admin/login";
-        } catch (err) {
-            toast.error("error");
-            console.log("error", err)
-        }
-    };
+  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
 
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/admin/logout`, { withCredentials: true });  // important for session
 
-    return (
-       <div className="flex min-h-screen bg-bg-color text-gray-200">
+      toast.success("Logout successfully");
+      console.log("res", res.data)
+      window.location.href = "/admin/login";
+    } catch (err) {
+      toast.error("error");
+      console.log("error", err)
+    }
+  };
+
+
+
+  return (
+    <div className="flex min-h-screen bg-bg-color text-gray-200">
       {/* Mobile Sidebar (sliding) */}
       <div
         className={`fixed top-0 left-0 z-40 h-full w-64 bg-bg-light3 text-white flex flex-col transform transition-transform duration-300 ease-in-out
@@ -49,6 +49,9 @@ const AdminWrapper = ({ children }) => {
           <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
             Small Talk Prompt
           </Link>
+          <Link to="/admin/admin-review" className="block py-2 px-4 rounded hover:bg-gray-700">
+            Admin Review
+          </Link>
         </nav>
         <div className="p-4 border-t border-gray-700">
           <button onClick={handleLogout} className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 rounded">
@@ -69,11 +72,14 @@ const AdminWrapper = ({ children }) => {
           <Link to="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-700">
             Users
           </Link>
-           <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
+          <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
             GPT Instructions
           </Link>
-           <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
+          <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
             Small Talk Prompt
+          </Link>
+          <Link to="/admin/admin-review" className="block py-2 px-4 rounded hover:bg-gray-700">
+            Admin Review
           </Link>
         </nav>
         <div className="p-4 border-t border-gray-700">
@@ -104,7 +110,7 @@ const AdminWrapper = ({ children }) => {
         {children}
       </main>
     </div>
-    );
+  );
 };
 
 export default AdminWrapper;

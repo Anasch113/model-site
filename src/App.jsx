@@ -11,6 +11,7 @@ import Login from "./Pages/Admin/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Prompts from "./Pages/Admin/Prompts";
 import SmallTalkPrompts from "./Pages/Admin/SmallTalkPrompts";
+import AdminReview from "./Pages/Admin/AdminReview";
 function App() {
 
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/gpt-instructions" element={<Prompts />} />
           <Route path="/admin/smalltalk-prompt" element={<SmallTalkPrompts />} />
+          <Route path="/admin/admin-review" element={<AdminReview />} />
 
         </Routes>
 
