@@ -6,24 +6,31 @@ const AdminReview = () => {
   const [pendingMessages, setPendingMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const SERVER_URL = import.meta.env.VITE_SERVER_URL
-  
-const fetchPending = async () => {
-  setLoading(true)
-  try {
-    const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/adminMessages/pending`)
-    const data = await res.data
-    
-    setPendingMessages(prev => {
-      // keep existing messages, add only new ones
-      const existingIds = new Set(prev.map(m => m.id))
-      const newOnes = data.filter(m => !existingIds.has(m.id))
-      return [...prev, ...newOnes] // append at bottom
-    })
-  } catch (err) {
-    console.error('Error fetching pending messages', err)
+
+  const fetchPending = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/adminMessages/pending`)
+      const data = await res.data
+
+      setPendingMessages(prev => {
+        const serverIds = new Set(data.map(m => m.id))
+
+        // keep only those still on server
+        const stillPending = prev.filter(m => serverIds.has(m.id))
+
+        // add new ones
+        const existingIds = new Set(stillPending.map(m => m.id))
+        const newOnes = data.filter(m => !existingIds.has(m.id))
+
+        return [...stillPending, ...newOnes] // always matches server
+      })
+
+    } catch (err) {
+      console.error('Error fetching pending messages', err)
+    }
+    setLoading(false)
   }
-  setLoading(false)
-}
 
 
   const approveMessage = async (id, editedText) => {
@@ -45,6 +52,7 @@ const fetchPending = async () => {
     const interval = setInterval(fetchPending, 3000) // auto refresh every 5s
     return () => clearInterval(interval)
   }, [])
+
   console.log("Pending messages", pendingMessages)
 
   return (
