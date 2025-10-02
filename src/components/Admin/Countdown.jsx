@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react"
 
-const Countdown = ({ createdAt }) => {
-  const [secondsLeft, setSecondsLeft] = useState(20)
+const Countdown = ({ createdAt, seconds }) => {
+  const [secondsLeft, setSecondsLeft] = useState(seconds)
 
   useEffect(() => {
-    if (!createdAt) return
+    if (!createdAt || !seconds) return
 
-    const expiry = new Date(createdAt).getTime() + 25 * 1000
+    // Parse createdAt once
+    const startTime = new Date(createdAt).getTime()
+    const expiry = startTime + seconds * 1000
 
     const tick = () => {
       const now = Date.now()
@@ -14,13 +16,13 @@ const Countdown = ({ createdAt }) => {
       setSecondsLeft(diff)
     }
 
-    tick()
+    tick() // initial calculation
+
     const interval = setInterval(tick, 1000)
     return () => clearInterval(interval)
-  }, [createdAt])
+  }, [createdAt, seconds]) // ✅ reset if createdAt OR seconds changes
 
   return <span>{secondsLeft}s</span>
 }
-
 
 export default Countdown
