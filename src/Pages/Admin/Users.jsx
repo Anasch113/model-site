@@ -4,12 +4,13 @@ import AdminDashboard from './AdminDashboard';
 import AdminWrapper from '../../components/Admin/AdminWrapper';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-
+import { FaRocket } from "react-icons/fa";
 
 
 
 
 const Users = () => {
+
     const [users, setUsers] = useState([])
 
     useEffect(() => {
@@ -65,6 +66,20 @@ const Users = () => {
         }
     };
 
+
+    const handleActivate = async (chat_id) => {
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/admin/activate-user/${chat_id}`)
+            toast.success("Activation message sent to user!")
+
+
+        } catch (error) {
+            toast.error("Something went wrong!")
+        }
+
+    }
+
     return (
 
         <AdminWrapper >
@@ -90,7 +105,7 @@ const Users = () => {
                                 }</td>
                                 <td className="p-4">{user.payment_status
                                 }</td>
-                                <td className="p-4">{user.onboarding_status
+                                <td className="p-4">{user.payment_status === "waiting" ? "Waiting for activation" : user.onboarding_status
                                 }</td>
                                 <td className="p-4 flex justify-center gap-4">
                                     <button
@@ -105,8 +120,22 @@ const Users = () => {
                                         className="text-red-600 hover:text-red-800"
                                         title="Delete User"
                                     >
-                                        <FaTrashAlt size={20}/>
+                                        <FaTrashAlt size={20} />
                                     </button>
+                                    {
+                                        user.payment_status === "waiting" &&
+
+                                        <button
+                                            onClick={() => {
+                                                handleActivate(user.chat_id)
+                                            }}
+                                            className="text-blue-600 hover:text-blue-800"
+                                            title="Delete User"
+                                        >
+                                            <FaRocket size={20} />
+                                        </button>
+                                    }
+
                                 </td>
                             </tr>
                         ))}
