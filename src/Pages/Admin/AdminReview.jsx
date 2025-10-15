@@ -89,16 +89,27 @@ const AdminReview = () => {
             <p className="mb-2"><strong>Chat ID:</strong> {msg.chat_id}</p>
             <p className="mb-2"><strong>User Nickname:</strong> {msg.nickname}</p>
             {/* <p className="mb-2"><strong>Message:</strong> {msg.original_text}</p> */}
+
+            <div className='border my-4 p-4 rounded-md flex flex-col gap-6'>
+              <p> <strong>User Message:</strong><br /> {msg.debug_info.original_user_message}</p>
+              <p><strong>GPT Enhanced Response:</strong> <br /> {msg?.debug_info?.gpt_enhanced_german_response_ ? msg.debug_info.gpt_enhanced_german_response_ : "N/A"}</p>
+
+              <p><strong>Raw Model Response:</strong> <br /> {msg?.debug_info?.raw_model_response ? msg.debug_info.raw_model_response : "N/A"}</p>
+
+              <p><strong>Additional Debug Info:</strong> <br /> {msg?.debug_info?.debug_info ? msg.debug_info.debug_info : "N/A"}</p>
+            </div>
+
+
             <textarea
               className="w-full border rounded p-2 mb-2 bg-bg-color"
               defaultValue={msg.original_text}
               onChange={(e) => msg._edited = e.target.value}
-              rows={8}
+              rows={6}
             />
             <small className="text-gray-500">
 
               {msg.status === "editing"
-                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={20} /></>
+                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={60} /></>
                 : <>Auto-sending in <Countdown createdAt={msg.created_at} seconds={10} /></>
               }
 
