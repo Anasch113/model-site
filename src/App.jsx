@@ -8,7 +8,7 @@ import PrivacyPage from "./Pages/Home/PrivacyPage";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import Users from "./Pages/Admin/Users";
 import Login from "./Pages/Admin/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
+import AdmAdminProtectedRoute from "./components/AdminProtectedRoute";
 import Prompts from "./Pages/Admin/Prompts";
 import SmallTalkPrompts from "./Pages/Admin/SmallTalkPrompts";
 import AdminReview from "./Pages/Admin/AdminReview";
@@ -24,7 +24,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/model-guide" element={<ModelGuide />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+          <Route path="/admin/dashboard" element={
+            <AdmAdminProtectedRoute >
+
+               <AdminDashboard />
+            </AdmAdminProtectedRoute>
+         
+            } />
+
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/login" element={<Login />} />

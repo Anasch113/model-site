@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast'
 import { Menu, X } from "lucide-react";
+import { getAdminRole } from "../../utils/auth";
 const AdminWrapper = ({ children }) => {
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+  const role = getAdminRole();
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -17,6 +19,10 @@ const AdminWrapper = ({ children }) => {
 
       toast.success("Logout successfully");
       console.log("res", res.data)
+
+      localStorage.removeItem("admin_role");
+      localStorage.removeItem("admin_authenticated");
+
       window.location.href = "/admin/login";
     } catch (err) {
       toast.error("error");
@@ -36,6 +42,7 @@ const AdminWrapper = ({ children }) => {
         <div className="p-4 text-2xl font-semibold border-b border-gray-700">
           Admin Panel
         </div>
+
         <nav className="flex-1 p-4 space-y-2">
           <Link to="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-gray-700">
             Dashboard
@@ -43,16 +50,26 @@ const AdminWrapper = ({ children }) => {
           <Link to="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-700">
             Users
           </Link>
-          <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
-            GPT Instructions
-          </Link>
-          <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Small Talk Prompt
-          </Link>
+          {
+            role === "admin" &&
+            <>
+
+              <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
+                GPT Instructions
+              </Link>
+              <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
+                Small Talk Prompt
+              </Link>
+
+            </>
+          }
+
+
           <Link to="/admin/admin-review" className="block py-2 px-4 rounded hover:bg-gray-700">
             Admin Review
           </Link>
         </nav>
+
         <div className="p-4 border-t border-gray-700">
           <button onClick={handleLogout} className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 rounded">
             Logout
@@ -69,15 +86,25 @@ const AdminWrapper = ({ children }) => {
           <Link to="/admin/dashboard" className="block py-2 px-4 rounded hover:bg-gray-700">
             Dashboard
           </Link>
+
           <Link to="/admin/users" className="block py-2 px-4 rounded hover:bg-gray-700">
             Users
           </Link>
-          <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
-            GPT Instructions
-          </Link>
-          <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Small Talk Prompt
-          </Link>
+
+          {
+            role === "admin" && <>
+
+              <Link to="/admin/gpt-instructions" className="block py-2 px-4 rounded hover:bg-gray-700">
+                GPT Instructions
+              </Link>
+              <Link to="/admin/smalltalk-prompt" className="block py-2 px-4 rounded hover:bg-gray-700">
+                Small Talk Prompt
+              </Link>
+
+            </>
+          }
+
+
           <Link to="/admin/admin-review" className="block py-2 px-4 rounded hover:bg-gray-700">
             Admin Review
           </Link>

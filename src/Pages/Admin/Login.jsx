@@ -3,6 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Login = () => {
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -14,8 +15,14 @@ const Login = () => {
                 password
             }, { withCredentials: true });  // important for session
 
+            
+            localStorage.setItem("admin_role", res.data.role); 
+            localStorage.setItem("admin_authenticated", "true");  // ✅ add this
+
+
             toast.success("Login successfully!");
-            console.log("res", res.data)
+            console.log("login res", res.data)
+
             window.location.href = "/admin/dashboard";
         } catch (err) {
             toast.error("Invalid Credentials");

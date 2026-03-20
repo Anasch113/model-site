@@ -38,9 +38,11 @@ const Prompts = ({ promptName = "lady_ivy_response" }) => {
 
     return (
         <AdminWrapper >
+            
             <h1 className="text-2xl font-bold mb-4">GPT Instructions</h1>
             <div className="bg-bg-color shadow rounded-lg overflow-x-auto">
                 <div className="p-4 md:max-w-4xl mx-auto">
+
                     <h2 className="text-xl font-bold mb-4">Edit Prompt: {promptName}</h2>
                     {message && <p className="mb-2 text-sm text-green-700">{message}</p>}
 
@@ -64,6 +66,7 @@ const Prompts = ({ promptName = "lady_ivy_response" }) => {
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
                     >
                         {saving ? "Saving..." : "Save Changes"}
+
                     </button>
                 </div>
             </div>
