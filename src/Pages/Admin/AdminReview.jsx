@@ -109,8 +109,8 @@ const AdminReview = () => {
             <small className="text-gray-500">
 
               {msg.status === "editing"
-                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={60} /></>
-                : <>Auto-sending in <Countdown createdAt={msg.created_at} seconds={10} /></>
+                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={90} /></>
+                : <>Auto-sending in <Countdown createdAt={msg.created_at} seconds={30} /></>
               }
 
             </small>
