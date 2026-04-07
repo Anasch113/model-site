@@ -6,6 +6,8 @@ import Countdown from "../../components/Admin/Countdown"
 const AdminReview = () => {
   const [pendingMessages, setPendingMessages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [enabled, setEnabled] = useState(false);
+
 
   const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
@@ -75,9 +77,49 @@ const AdminReview = () => {
 
 
 
+
+  useEffect(() => {
+    axios.get(`${SERVER_URL}/adminMessages/live-notifications`, { withCredentials: true })
+      .then(res => {
+        setEnabled(res.data.enabled);
+      });
+  }, []);
+
+
+  const handleToggle = async () => {
+    const newValue = !enabled;
+    setEnabled(newValue);
+
+    await axios.post(
+      `${SERVER_URL}/adminMessages/toggle-live-notifications`,
+      { enabled: newValue },
+      { withCredentials: true }
+    ).then(res =>{
+      console.log("toogle response:", res.data)
+    });
+  };
+
+
   return (
     <AdminWrapper>
-      <h1 className="text-2xl font-bold mb-4">Admin Review</h1>
+      <div className="flex items-center justify-between gap-3">
+
+        <h1 className="text-2xl font-bold mb-4">Admin Review</h1>
+
+        <div className='space-x-2'>
+          <span>Live Notifications</span>
+
+          <button
+            onClick={handleToggle}
+            className={`px-4 py-2 rounded ${enabled ? "bg-green-500" : "bg-gray-400"
+              }`}
+          >
+            {enabled ? "ON" : "OFF"}
+          </button>
+        </div>
+
+      </div>
+
       <div className="bg-bg-color shadow rounded-lg overflow-x-auto p-4">
         {/* {loading && <p>Loading...</p>} */}
 
@@ -109,7 +151,7 @@ const AdminReview = () => {
             <small className="text-gray-500">
 
               {msg.status === "editing"
-                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={90} /></>
+                ? <>Editing... Auto-sending in <Countdown createdAt={msg.created_at} seconds={180} /></>
                 : <>Auto-sending in <Countdown createdAt={msg.created_at} seconds={30} /></>
               }
 
